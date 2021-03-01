@@ -1,0 +1,163 @@
+﻿using Esri.ArcGISRuntime.Symbology;
+using Esri.ArcGISRuntime.UI;
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using Color = System.Drawing.Color;
+
+namespace WinFormsHostForArcGIS
+{
+    public static class SymbolFactory
+    {
+        #region Fields
+
+        private const int TextOutlineSize = 3;
+        private const int SymbolSpacer = 3;
+        private const int AlphaChannelValue = 32;
+        private const int TriangleSymbolAngle = 180;
+        private const int TriangleSymbolSize = 7;
+
+        private static readonly Color sTriangleSymbolColor = Color.FromArgb(0, 0, 0);
+        private static readonly Color sTriangleSymbolHighlightlColor = Color.FromArgb(255, 255, 255);
+        private static readonly Color sTextOutlineColor = Color.FromArgb(220, 255, 255, 255);
+
+        private static readonly Image sScaledBitmap = new Bitmap(Properties.Resources.House, new Size(32, 32));
+
+
+        #endregion Fields
+
+        #region Public Methods
+
+        public static CompositeSymbol CreateEntityCompositeSymbol(string label)
+        {
+            // Composite symbol is used to collate all the constituent parts
+            var compositeSymbol = new CompositeSymbol();
+
+            // Reversed triangle symbol
+            var triangleSymbol = CreatePointMarker(false);
+
+            // Map point marker
+            compositeSymbol.Symbols.Add(triangleSymbol);
+
+            // Entity label
+            double textHeight;
+            var entityLabelSymbol = CreateEntityLabelSymbol(label, triangleSymbol, false, out textHeight);
+            compositeSymbol.Symbols.Add(entityLabelSymbol);
+
+            // Entity icon symbol
+            var entityIconSymbol = CreateEntityIconSymbol(entityLabelSymbol, textHeight);
+            compositeSymbol.Symbols.Add(entityIconSymbol);
+
+            return compositeSymbol;
+        }
+
+        #endregion Public Methods
+
+        #region Private Methods
+
+        private static SimpleMarkerSymbol CreatePointMarker(bool isGrayed)
+        {
+            var symbolColor = isGrayed
+                                    ? Color.FromArgb(AlphaChannelValue, sTriangleSymbolColor)
+                                    : sTriangleSymbolColor;
+
+            var triangleSymbol = new SimpleMarkerSymbol
+            {
+                Color = symbolColor,
+                Style = SimpleMarkerSymbolStyle.Triangle,
+                Angle = TriangleSymbolAngle,
+                Size = TriangleSymbolSize
+            };
+
+            triangleSymbol.OffsetY = -(triangleSymbol.Size / 0.75) / 2;
+
+            Color symbolOutlineColor = isGrayed
+                                        ? Color.FromArgb(AlphaChannelValue, sTriangleSymbolHighlightlColor)
+                                        : sTriangleSymbolHighlightlColor;
+
+            triangleSymbol.Outline = new SimpleLineSymbol
+            {
+                Color = symbolOutlineColor,
+                Width = 1
+            };
+
+            return triangleSymbol;
+        }
+
+        private static TextSymbol CreateEntityLabelSymbol(string text, SimpleMarkerSymbol pointMarker, bool isGrayed, out double textHeight)
+        {
+            var entityLabelSymbol = new TextSymbol
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Text = text
+            };
+
+            if (text.Length > 0)
+            {
+                var lineCount = entityLabelSymbol.Text.Split('\n').Length;
+
+                var fontFamily = new System.Windows.Media.FontFamily(entityLabelSymbol.FontFamily);
+
+                var height = fontFamily.LineSpacing * entityLabelSymbol.Size;
+
+                textHeight = lineCount * height;
+
+                if (pointMarker != null)
+                {
+                    entityLabelSymbol.OffsetY = Math.Abs(pointMarker.OffsetY) + (pointMarker.Size + textHeight / 2);
+                }
+            }
+            else
+            {
+                entityLabelSymbol.Text = String.Empty;
+                textHeight = 0;
+                if (pointMarker != null)
+                {
+                    entityLabelSymbol.OffsetY = Math.Abs(pointMarker.OffsetY);
+                }
+            }
+
+            entityLabelSymbol.Color = Color.Black;
+
+            entityLabelSymbol.HaloColor = sTextOutlineColor;
+
+            // To workaround an Esri issue with TextSymbol selection with transparency where the text has unwanted ghosting effect.
+            // The BorderLineSize is set to zero when entity symbol is determined to be grayed to improve the visibility.
+            entityLabelSymbol.HaloWidth = isGrayed ? 0 : TextOutlineSize;
+
+            return entityLabelSymbol;
+        }
+
+        //private static readonly Bitmap sBitmap = Properties.Resources.House;
+
+        public static byte[] ToByteArray(Image image, ImageFormat format)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.Save(ms, format);
+                return ms.ToArray();
+            }
+        }
+
+
+        private static PictureMarkerSymbol CreateEntityIconSymbol(TextSymbol entityLabel, double textHeight)
+        {
+            var entityRuntimeImage = new RuntimeImage(ToByteArray(sScaledBitmap, ImageFormat.Png));
+
+            var iconSymbol = new PictureMarkerSymbol(entityRuntimeImage)
+            {
+                Height = 32,
+                Width = 32
+            };
+
+            iconSymbol.OffsetY = textHeight > 0 ?
+                                    entityLabel.OffsetY + (textHeight / 2 + iconSymbol.Height / 2 + SymbolSpacer) :
+                                    entityLabel.OffsetY + (iconSymbol.Height / 2 + SymbolSpacer);
+
+            return iconSymbol;
+        }
+
+        #endregion Private Methods
+    }
+}
