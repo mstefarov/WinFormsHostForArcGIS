@@ -1,4 +1,5 @@
-﻿using Esri.ArcGISRuntime.Symbology;
+﻿using Esri.ArcGISRuntime.Mapping;
+using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using System;
 using System.Collections.Generic;
@@ -71,6 +72,75 @@ namespace WinFormsHostForArcGIS
             compositeSymbol.Symbols.Add(entityIconSymbol);
 
             return compositeSymbol;
+        }
+
+        public static LabelDefinition CreateLabelDefinition(string labelExpression)
+        {
+            string json = @"{
+   ""labelExpressionInfo"":{
+      ""expression"":""return " + labelExpression + @";""
+   },
+   ""allowOverrun"":false,
+   ""labelExpression"":null,
+   ""ArcadeExpression"":""return " + labelExpression + @";"",
+   ""labelPlacement"":""esriServerPointLabelPlacementAboveCenter"",
+   ""minScale"":0,
+   ""maxScale"":0,
+   ""name"":null,
+   ""priority"":0,
+   ""removeDuplicates"":""none"",
+   ""removeDuplicatesDistance"":0,
+   ""repeatLabel"":false,
+   ""repeatLabelDistance"":0,
+   ""stackLabel"":false,
+   ""stackAlignment"":""textSymbol"",
+   ""useCodedValues"":false,
+   ""where"":null,
+   ""deconflictionStrategy"":""none"",
+   ""symbol"":{
+      ""angle"":0,
+      ""backgroundColor"":[
+         0,
+         0,
+         0,
+         0
+      ],
+      ""borderLineColor"":[
+         0,
+         0,
+         0,
+         0
+      ],
+      ""borderLineSize"":0,
+      ""color"":[
+         0,
+         0,
+         0,
+         255
+      ],
+      ""font"":{
+         ""decoration"":""none"",
+         ""size"":7.5,
+         ""style"":""normal"",
+         ""weight"":""normal""
+      },
+      ""haloColor"":[
+         255,
+         255,
+         255,
+         255
+      ],
+      ""haloSize"":0.75,
+      ""horizontalAlignment"":""center"",
+      ""kerning"":false,
+      ""type"":""esriTS"",
+      ""verticalAlignment"":""top"",
+      ""xoffset"":0,
+      ""yoffset"":-14
+   }
+}";
+            // Note that yoffset needed tweaking to vertically align labels with icons
+            return LabelDefinition.FromJson(json);
         }
 
         #endregion Public Methods

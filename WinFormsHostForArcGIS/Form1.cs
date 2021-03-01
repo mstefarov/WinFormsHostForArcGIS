@@ -1,4 +1,4 @@
-using Esri.ArcGISRuntime.Geometry;
+﻿using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
@@ -23,6 +23,7 @@ namespace WinFormsHostForArcGIS
 
         public const string IsGrayedAttribute = "IsGrayed";
         public const string LineCountAttribute = "LineCount";
+        public const string LabelTextAttribute = "LabelText";
 
         public Form1()
         {
@@ -54,8 +55,13 @@ namespace WinFormsHostForArcGIS
                 var graphic = new Graphic(p);
                 graphic.Attributes[IsGrayedAttribute] = 0; // boolean attributes are not supported on Graphics, use 0 or 1 instead.
                 graphic.Attributes[LineCountAttribute] = 1 + labelText.Count(c => '\n' == c);
+                graphic.Attributes[LabelTextAttribute] = labelText;
                 mGraphics.Add(graphic);
             }
+
+            var labelDef = SymbolFactory.CreateLabelDefinition("$feature." + LabelTextAttribute);
+            mOverlay.LabelDefinitions.Add(labelDef);
+            mOverlay.LabelsEnabled = true;
 
             mOverlay.Renderer = SymbolFactory.CreateIconRenderer();
             // TODO: Add back labeling
