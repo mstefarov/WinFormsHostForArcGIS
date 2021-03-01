@@ -1,6 +1,7 @@
 ﻿using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.UI;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -29,21 +30,37 @@ namespace WinFormsHostForArcGIS
 
         #region Public Methods
 
-        public static CompositeSymbol CreateEntityCompositeSymbol(string label)
+        public static Renderer CreateIconRenderer()
+        {
+            var values = new List<UniqueValue>
+            {
+                new UniqueValue("Normal", "Normal", CreateEntityCompositeSymbol("-", false), 0),
+                new UniqueValue("Grayed", "Grayed", CreateEntityCompositeSymbol("-", true), 1),
+            };
+            var uvr = new UniqueValueRenderer(
+                new[] { Form1.IsGrayedAttribute }, // attributes used to select the symbol
+                values,
+                defaultLabel: values[0].Label,
+                defaultSymbol: values[0].Symbol
+            );
+            return uvr;
+        }
+
+        public static CompositeSymbol CreateEntityCompositeSymbol(string label, bool isGrayed)
         {
             // Composite symbol is used to collate all the constituent parts
             var compositeSymbol = new CompositeSymbol();
 
             // Reversed triangle symbol
-            var triangleSymbol = CreatePointMarker(false);
+            var triangleSymbol = CreatePointMarker(isGrayed);
 
             // Map point marker
             compositeSymbol.Symbols.Add(triangleSymbol);
 
             // Entity label
             double textHeight;
-            var entityLabelSymbol = CreateEntityLabelSymbol(label, triangleSymbol, false, out textHeight);
-            compositeSymbol.Symbols.Add(entityLabelSymbol);
+            var entityLabelSymbol = CreateEntityLabelSymbol(label, triangleSymbol, isGrayed, out textHeight);
+            //compositeSymbol.Symbols.Add(entityLabelSymbol); // Don't add text symbols (we'll get to this later)
 
             // Entity icon symbol
             var entityIconSymbol = CreateEntityIconSymbol(entityLabelSymbol, textHeight);

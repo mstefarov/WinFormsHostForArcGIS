@@ -1,4 +1,4 @@
-﻿using Esri.ArcGISRuntime.Geometry;
+using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.Mapping;
 using Esri.ArcGISRuntime.UI;
 using Esri.ArcGISRuntime.UI.Controls;
@@ -19,6 +19,8 @@ namespace WinFormsHostForArcGIS
         private bool mGraphicsCreated;
         private bool mRemoveGraphics;
         private int mCount;
+
+        public const string IsGrayedAttribute = "IsGrayed";
 
         public Form1()
         {
@@ -46,9 +48,14 @@ namespace WinFormsHostForArcGIS
                 var randomX = mRandom.NextDouble() * xMax * polarityX;
                 var randomY = mRandom.NextDouble() * yMax * polarityY;
                 var p = new MapPoint(randomX, randomY, SpatialReferences.Wgs84);
-                var simpleMarkerSymbol = SymbolFactory.CreateEntityCompositeSymbol($"Person {i}");
-                mGraphics.Add(new Graphic(p, simpleMarkerSymbol));
+                var labelText = $"Person {i}";
+                var graphic = new Graphic(p);
+                graphic.Attributes[IsGrayedAttribute] = 0; // boolean attributes are not supported on Graphics, use 0 or 1 instead.
+                mGraphics.Add(graphic);
             }
+
+            mOverlay.Renderer = SymbolFactory.CreateIconRenderer();
+            // TODO: Add back labeling
         }
 
         private void SwitchGraphics()
