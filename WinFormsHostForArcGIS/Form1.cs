@@ -5,6 +5,7 @@ using Esri.ArcGISRuntime.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace WinFormsHostForArcGIS
@@ -21,6 +22,7 @@ namespace WinFormsHostForArcGIS
         private int mCount;
 
         public const string IsGrayedAttribute = "IsGrayed";
+        public const string LineCountAttribute = "LineCount";
 
         public Form1()
         {
@@ -51,6 +53,7 @@ namespace WinFormsHostForArcGIS
                 var labelText = $"Person {i}";
                 var graphic = new Graphic(p);
                 graphic.Attributes[IsGrayedAttribute] = 0; // boolean attributes are not supported on Graphics, use 0 or 1 instead.
+                graphic.Attributes[LineCountAttribute] = 1 + labelText.Count(c => '\n' == c);
                 mGraphics.Add(graphic);
             }
 

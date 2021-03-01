@@ -34,11 +34,15 @@ namespace WinFormsHostForArcGIS
         {
             var values = new List<UniqueValue>
             {
-                new UniqueValue("Normal", "Normal", CreateEntityCompositeSymbol("-", false), 0),
-                new UniqueValue("Grayed", "Grayed", CreateEntityCompositeSymbol("-", true), 1),
+                new UniqueValue("Normal", "Normal", CreateEntityCompositeSymbol("-", false), Values(1, 0)),
+                new UniqueValue("Grayed", "Grayed", CreateEntityCompositeSymbol("-", true), Values(1, 1)),
+                new UniqueValue("Normal2", "Normal2", CreateEntityCompositeSymbol("-\n-", false), Values(2, 0)),
+                new UniqueValue("Grayed2", "Grayed2", CreateEntityCompositeSymbol("-\n-", true), Values(2, 1)),
+                new UniqueValue("Normal3", "Normal3", CreateEntityCompositeSymbol("-\n-\n-", false), Values( 3, 0)),
+                new UniqueValue("Grayed3", "Grayed3", CreateEntityCompositeSymbol("-\n-\n-", true), Values(3, 1)),
             };
             var uvr = new UniqueValueRenderer(
-                new[] { Form1.IsGrayedAttribute }, // attributes used to select the symbol
+                new[] { Form1.LineCountAttribute, Form1.IsGrayedAttribute}, // attributes used to select the symbol
                 values,
                 defaultLabel: values[0].Label,
                 defaultSymbol: values[0].Symbol
@@ -72,6 +76,9 @@ namespace WinFormsHostForArcGIS
         #endregion Public Methods
 
         #region Private Methods
+
+        // Convenience method for wrapping arbitrary object lists in an IEnumerable
+        private static IEnumerable<object> Values(params object[] values) => values;
 
         private static SimpleMarkerSymbol CreatePointMarker(bool isGrayed)
         {
