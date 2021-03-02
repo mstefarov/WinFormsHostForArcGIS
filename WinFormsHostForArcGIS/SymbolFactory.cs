@@ -73,6 +73,15 @@ namespace WinFormsHostForArcGIS
             return compositeSymbol;
         }
 
+        public static TextSymbol CreateLabelSymbol(string label, bool isGrayed)
+        {
+            // The triangle is only used to get the correct OffsetY
+            var triangleSymbol = CreatePointMarker(isGrayed);
+
+            var entityLabelSymbol = CreateEntityLabelSymbol(label, triangleSymbol, isGrayed, out _);
+            return entityLabelSymbol;
+        }
+
         #endregion Public Methods
 
         #region Private Methods

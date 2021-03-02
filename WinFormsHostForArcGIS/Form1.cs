@@ -15,8 +15,10 @@ namespace WinFormsHostForArcGIS
         private const int GraphicCount = 50000;
         private readonly Random mRandom = new Random(1);
         private readonly GraphicsOverlay mOverlay;
+        private readonly GraphicsOverlay mLabelOverlay;
         private readonly Timer mTimer = new Timer();
         private readonly List<Graphic> mGraphics = new List<Graphic>(GraphicCount);
+        private readonly List<Graphic> mLabelGraphics = new List<Graphic>(GraphicCount);
         private bool mGraphicsCreated;
         private bool mRemoveGraphics;
         private int mCount;
@@ -29,9 +31,11 @@ namespace WinFormsHostForArcGIS
             InitializeComponent();
             var mapView = new MapView();
             mOverlay = new GraphicsOverlay();
+            mLabelOverlay = new GraphicsOverlay();
             mapView.Map = new Map(Basemap.CreateTopographic());
             mElementHost.Child = mapView;
             mapView.GraphicsOverlays.Add(mOverlay);
+            mapView.GraphicsOverlays.Add(mLabelOverlay);
 
             mTimer.Tick += (sender, args) => SwitchGraphics();
             mTimer.Interval = 1000;
@@ -55,6 +59,9 @@ namespace WinFormsHostForArcGIS
                 graphic.Attributes[IsGrayedAttribute] = 0; // boolean attributes are not supported on Graphics, use 0 or 1 instead.
                 graphic.Attributes[LineCountAttribute] = 1 + labelText.Count(c => '\n' == c);
                 mGraphics.Add(graphic);
+
+                var labelGraphic = new Graphic(p, SymbolFactory.CreateLabelSymbol(labelText, false));
+                mLabelGraphics.Add(labelGraphic);
             }
 
             mOverlay.Renderer = SymbolFactory.CreateIconRenderer();
@@ -74,6 +81,7 @@ namespace WinFormsHostForArcGIS
             if (mRemoveGraphics)
             {
                 mOverlay.Graphics.Clear();
+                mLabelOverlay.Graphics.Clear();
                 mRemoveGraphics = false;
                 return;
             }
@@ -81,6 +89,7 @@ namespace WinFormsHostForArcGIS
             mRemoveGraphics = true;
 
             mOverlay.Graphics.AddRange(mGraphics);
+            mLabelOverlay.Graphics.AddRange(mLabelGraphics);
         }
     }
 }
